@@ -1,1 +1,1 @@
-# slide-manager
+# Slide Manager
