@@ -6,11 +6,12 @@ import (
 	"strings"
 
 	"cloud.google.com/go/storage"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
 
 func CreateClient(ctx context.Context) (*storage.Client, error) {
-	return storage.NewClient(ctx, option.WithCredentialsJSON(key))
+	return storage.NewClient(ctx, option.WithCredentialsJSON(Key))
 }
 
 type StorageOp struct {
@@ -74,6 +75,27 @@ func (s *StorageOp) WriteFile(dirs []string, fileName string, body []byte) error
 	_, err := writer.Write(body)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+// Delete files
+func (s *StorageOp) Delete(prefix string) error {
+	objects := s.rc.Objects(s.ctx, &storage.Query{
+		Prefix: prefix,
+	})
+
+	for {
+		attrs, err := objects.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		if err := s.rc.Object(attrs.Name).Delete(s.ctx); err != nil {
+			return err
+		}
 	}
 	return nil
 }

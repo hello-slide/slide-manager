@@ -30,7 +30,7 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	sample = os.Getenv("SAMPLE")
+	sample = os.Getenv("KEY")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/slide/", rootHandler)
