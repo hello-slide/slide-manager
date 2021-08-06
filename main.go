@@ -2,31 +2,36 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	networkUtils "github.com/hello-slide/network-util"
 )
 
+var sample string
+
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello World"))
+	w.Write([]byte(sample))
 }
 
 func createHandler(w http.ResponseWriter, r *http.Request) {
-
+	w.Write([]byte("Hello World"))
 }
 
 func listHandler(w http.ResponseWriter, r *http.Request) {
-
+	w.Write([]byte("Hello World"))
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request) {
-
+	w.Write([]byte("Hello World"))
 }
 
 func deleteHandler(w http.ResponseWriter, r *http.Request) {
-
+	w.Write([]byte("Hello World"))
 }
 
 func main() {
+	sample = os.Getenv("SAMPLE")
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/slide/", rootHandler)
 	mux.HandleFunc("/slide/create", createHandler)
