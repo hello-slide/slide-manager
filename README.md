@@ -4,7 +4,8 @@
 
 ```env
 KEY= # Google IAM json
-SLIDE_INFO_STATE=slide-info-state
+SLIDE_INFO_STATE="slide-info-state"
+TOKEN_MANAGER="token-manager"
 ```
 
 ## LICENSE

@@ -167,7 +167,7 @@ func init() {
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/slide/", rootHandler)
+	mux.HandleFunc("/", rootHandler)
 	mux.HandleFunc("/slide/create", createHandler)
 	mux.HandleFunc("/slide/list", listHandler)
 	mux.HandleFunc("/slide/edit", editHandler)
