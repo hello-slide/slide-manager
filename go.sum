@@ -193,6 +193,8 @@ github.com/hashicorp/golang-lru v0.5.1 h1:0hERBMJE1eitiLkihrMvRVBYAkpHzc/J3QdDN+
 github.com/hashicorp/golang-lru v0.5.1/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/hello-slide/network-util v0.0.0-20210807132629-8e360ed99cef h1:hJ8V0wn9QTZjR+PRPOsc7O09MmLLuFYnVwedYplc+UE=
 github.com/hello-slide/network-util v0.0.0-20210807132629-8e360ed99cef/go.mod h1:TODPdsAOaIWAqenSG5aKVhobNmL84095TdQZ2LdNhhI=
+github.com/hello-slide/network-util v1.0.0 h1:Pqs5mzHp3g0Is4FuR3v+wsdq6B6P4y4F9J44aP67e4U=
+github.com/hello-slide/network-util v1.0.0/go.mod h1:TODPdsAOaIWAqenSG5aKVhobNmL84095TdQZ2LdNhhI=
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639 h1:mV02weKRL81bEnm8A0HT1/CAelMQDBuQIfLw8n+d6xI=
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
