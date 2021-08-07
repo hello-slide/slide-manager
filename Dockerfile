@@ -6,6 +6,10 @@ WORKDIR /go/src
 COPY go.mod go.sum ./
 RUN go mod download
 
+COPY ./slide ./slide/
+COPY ./state ./state/
+COPY ./storage ./storage/
+COPY ./token ./token/
 COPY ./main.go ./
 
 ARG CGO_ENABLED=0
