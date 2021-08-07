@@ -7,28 +7,23 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"cloud.google.com/go/storage"
 	"github.com/dapr/go-sdk/client"
 	"github.com/hello-slide/slide-manager/state"
-	storageOp "github.com/hello-slide/slide-manager/storage"
 	"github.com/hello-slide/slide-manager/token"
 )
 
 type SlideManager struct {
-	ctx       context.Context
-	storageOp *storageOp.StorageOp
-	userId    string
-	client    *client.Client
+	ctx    context.Context
+	userId string
+	client *client.Client
 }
 
-func NewSlideManager(ctx context.Context, client storage.Client, daprClient *client.Client, bucketName string, userId string) *SlideManager {
-	storageOp := storageOp.NewStorageOp(ctx, client, bucketName)
+func NewSlideManager(ctx context.Context, daprClient *client.Client, userId string) *SlideManager {
 
 	return &SlideManager{
-		ctx:       ctx,
-		storageOp: storageOp,
-		userId:    userId,
-		client:    daprClient,
+		ctx:    ctx,
+		userId: userId,
+		client: daprClient,
 	}
 }
 

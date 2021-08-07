@@ -51,7 +51,7 @@ func createHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	slideManager := slide.NewSlideManager(ctx, *storageClient, &client, "slide-data", userId)
+	slideManager := slide.NewSlideManager(ctx, &client, userId)
 	slideId, err := slideManager.Create(title)
 	if err != nil {
 		networkUtils.ErrorStatus(w)
@@ -92,7 +92,7 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, err)
 		return
 	}
-	slideManager := slide.NewSlideManager(ctx, *storageClient, &client, "slide-data", userId)
+	slideManager := slide.NewSlideManager(ctx, &client, userId)
 	slideConfig, err := slideManager.GetInfo()
 	if err != nil {
 		networkUtils.ErrorStatus(w)
@@ -142,7 +142,7 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, err)
 		return
 	}
-	slideManager := slide.NewSlideManager(ctx, *storageClient, &client, "slide-data", userId)
+	slideManager := slide.NewSlideManager(ctx, &client, userId)
 	if err := slideManager.Delete(slideId); err != nil {
 		networkUtils.ErrorStatus(w)
 		fmt.Fprintln(w, err)
