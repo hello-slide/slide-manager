@@ -104,7 +104,7 @@ func (s *SlideManager) GetInfo() (*SlideConfig, error) {
 	return &SlideConfig{
 		UserId:         s.userId,
 		NumberOfSlides: 0,
-		Slides:         nil,
+		Slides:         []SlideContent{},
 	}, nil
 }
 
