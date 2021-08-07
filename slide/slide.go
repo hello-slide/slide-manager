@@ -39,13 +39,16 @@ func (s *SlideManager) Create(title string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	t := time.Now()
+	now := time.Now()
+	nowUTC := now.UTC()
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	nowJST := nowUTC.In(jst)
 
 	slideContent := SlideContent{
 		Title:      title,
 		Id:         slideId,
-		CreateDate: t.Format("20060102150405"),
-		ChangeDate: t.Format("20060102150405"),
+		CreateDate: nowJST.Format("20060102150405"),
+		ChangeDate: nowJST.Format("20060102150405"),
 	}
 	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
 	getData, err := slideInfo.Get(s.userId)
