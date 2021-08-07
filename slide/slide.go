@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+	"unicode/utf8"
 
 	"cloud.google.com/go/storage"
+	"github.com/dapr/go-sdk/client"
+	"github.com/hello-slide/slide-manager/state"
 	storageOp "github.com/hello-slide/slide-manager/storage"
 	"github.com/hello-slide/slide-manager/token"
 )
@@ -15,15 +18,17 @@ type SlideManager struct {
 	ctx       context.Context
 	storageOp *storageOp.StorageOp
 	userId    string
+	client    *client.Client
 }
 
-func NewSlideManager(ctx context.Context, client storage.Client, bucketName string, userId string) *SlideManager {
+func NewSlideManager(ctx context.Context, client storage.Client, daprClient *client.Client, bucketName string, userId string) *SlideManager {
 	storageOp := storageOp.NewStorageOp(ctx, client, bucketName)
 
 	return &SlideManager{
 		ctx:       ctx,
 		storageOp: storageOp,
 		userId:    userId,
+		client:    daprClient,
 	}
 }
 
@@ -35,9 +40,6 @@ func NewSlideManager(ctx context.Context, client storage.Client, bucketName stri
 // Return:
 // - id string: Slide id
 func (s *SlideManager) Create(title string) (string, error) {
-	slideInfoPath := []string{s.userId}
-	fileName := "slide_config.json"
-
 	slideId, err := token.CreateSlideId(title)
 	if err != nil {
 		return "", err
@@ -50,19 +52,16 @@ func (s *SlideManager) Create(title string) (string, error) {
 		CreateDate: t.Format("20060102150405"),
 		ChangeDate: t.Format("20060102150405"),
 	}
-	var slideConfig SlideConfig
-
-	isExist, err := s.storageOp.FileExist(slideInfoPath, fileName)
+	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
+	getData, err := slideInfo.Get(s.userId)
 	if err != nil {
 		return "", err
 	}
 
-	if isExist {
-		slideConfigByte, err := s.storageOp.ReadFile(slideInfoPath, fileName)
-		if err != nil {
-			return "", err
-		}
-		if err := json.Unmarshal(slideConfigByte, &slideConfig); err != nil {
+	var slideConfig SlideConfig
+
+	if utf8.RuneCount(getData.Value) != 0 {
+		if err := json.Unmarshal(getData.Value, &slideConfig); err != nil {
 			return "", err
 		}
 		slideConfig.NumberOfSlides++
@@ -82,7 +81,7 @@ func (s *SlideManager) Create(title string) (string, error) {
 		return "", err
 	}
 
-	if err := s.storageOp.WriteFile(slideInfoPath, fileName, body); err != nil {
+	if err := slideInfo.Set(s.userId, body); err != nil {
 		return "", err
 	}
 
@@ -91,21 +90,17 @@ func (s *SlideManager) Create(title string) (string, error) {
 
 // Get Slides infomation of user.
 func (s *SlideManager) GetInfo() (*SlideConfig, error) {
-	slideInfoPath := []string{s.userId}
-	fileName := "slide_config.json"
 
-	isExist, err := s.storageOp.FileExist(slideInfoPath, fileName)
+	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
+	getData, err := slideInfo.Get(s.userId)
 	if err != nil {
 		return nil, err
 	}
-	if isExist {
-		var slideConfig SlideConfig
-		slideConfigByte, err := s.storageOp.ReadFile(slideInfoPath, fileName)
-		if err != nil {
-			return nil, err
-		}
 
-		if err := json.Unmarshal(slideConfigByte, &slideConfig); err != nil {
+	if utf8.RuneCount(getData.Value) != 0 {
+		var slideConfig SlideConfig
+
+		if err := json.Unmarshal(getData.Value, &slideConfig); err != nil {
 			return nil, err
 		}
 		return &slideConfig, nil
@@ -123,22 +118,16 @@ func (s *SlideManager) GetInfo() (*SlideConfig, error) {
 // Arguments:
 // - slideId: Id of slide.
 func (s *SlideManager) Delete(slideId string) error {
-	slideInfoPath := []string{s.userId}
-	fileName := "slide_config.json"
-
-	var slideConfig SlideConfig
-
-	isExist, err := s.storageOp.FileExist(slideInfoPath, fileName)
+	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
+	getData, err := slideInfo.Get(s.userId)
 	if err != nil {
 		return err
 	}
 
-	if isExist {
-		slideConfigByte, err := s.storageOp.ReadFile(slideInfoPath, fileName)
-		if err != nil {
-			return err
-		}
-		if err := json.Unmarshal(slideConfigByte, &slideConfig); err != nil {
+	var slideConfig SlideConfig
+
+	if utf8.RuneCount(getData.Value) != 0 {
+		if err := json.Unmarshal(getData.Value, &slideConfig); err != nil {
 			return err
 		}
 		slideConfig.NumberOfSlides--
@@ -158,7 +147,7 @@ func (s *SlideManager) Delete(slideId string) error {
 			return err
 		}
 
-		if err := s.storageOp.WriteFile(slideInfoPath, fileName, body); err != nil {
+		if err := slideInfo.Set(s.userId, body); err != nil {
 			return err
 		}
 	} else {

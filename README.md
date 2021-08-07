@@ -4,6 +4,7 @@
 
 ```env
 KEY= # Google IAM json
+SLIDE_INFO_STATE=slide-info-state
 ```
 
 ## LICENSE
