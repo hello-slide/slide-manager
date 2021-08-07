@@ -17,7 +17,6 @@ type SlideContent struct {
 
 // Describe the slide information possessed by the user.
 type SlideConfig struct {
-	UserId         string         `json:"user_id"`
 	NumberOfSlides int            `json:"number_of_slides"`
 	Slides         []SlideContent `json:"slides"`
 }

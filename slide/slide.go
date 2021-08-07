@@ -66,7 +66,6 @@ func (s *SlideManager) Create(title string) (string, error) {
 		slideConfig.Slides = append(slideConfig.Slides, slideContent)
 	} else {
 		slideConfig = SlideConfig{
-			UserId:         s.userId,
 			NumberOfSlides: 1,
 			Slides: []SlideContent{
 				slideContent,
@@ -105,7 +104,6 @@ func (s *SlideManager) GetInfo() (*SlideConfig, error) {
 	}
 	// Not exist
 	return &SlideConfig{
-		UserId:         s.userId,
 		NumberOfSlides: 0,
 		Slides:         []SlideContent{},
 	}, nil
