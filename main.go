@@ -3,14 +3,12 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 
 	"cloud.google.com/go/storage"
 	dapr "github.com/dapr/go-sdk/client"
 	networkUtils "github.com/hello-slide/network-util"
-	networkutil "github.com/hello-slide/network-util"
 	"github.com/hello-slide/slide-manager/slide"
 	_storage "github.com/hello-slide/slide-manager/storage"
 	"github.com/hello-slide/slide-manager/token"
@@ -30,32 +28,30 @@ func createHandler(w http.ResponseWriter, r *http.Request) {
 
 	headerData, err := networkUtils.GetHeader(w, r)
 	if err != nil {
-		fmt.Fprintln(w, err)
+		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
 	sessionToken, err := networkUtils.PickValue("SessionToken", headerData, w)
 	if err != nil {
-		fmt.Fprintln(w, err)
+		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
 	title, err := networkUtils.PickValue("Title", headerData, w)
 	if err != nil {
-		fmt.Fprintln(w, err)
+		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
 
 	userId, err := token.VerifySessionToken(ctx, client, sessionToken, tokenManagerName)
 	if err != nil {
-		networkUtils.ErrorStatus(w)
-		fmt.Fprintln(w, err)
+		networkUtils.ErrorResponse(w, 2, err)
 		return
 	}
 
 	slideManager := slide.NewSlideManager(ctx, &client, userId)
 	slideId, err := slideManager.Create(title)
 	if err != nil {
-		networkUtils.ErrorStatus(w)
-		fmt.Fprintln(w, err)
+		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
 
@@ -63,8 +59,7 @@ func createHandler(w http.ResponseWriter, r *http.Request) {
 		"slide_id": slideId,
 	})
 	if err != nil {
-		networkutil.ErrorStatus(w)
-		fmt.Fprintln(w, err)
+		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
 
@@ -78,32 +73,29 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 
 	headerData, err := networkUtils.GetHeader(w, r)
 	if err != nil {
-		fmt.Fprintln(w, err)
+		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
 	sessionToken, err := networkUtils.PickValue("SessionToken", headerData, w)
 	if err != nil {
-		fmt.Fprintln(w, err)
+		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
 	userId, err := token.VerifySessionToken(ctx, client, sessionToken, tokenManagerName)
 	if err != nil {
-		networkUtils.ErrorStatus(w)
-		fmt.Fprintln(w, err)
+		networkUtils.ErrorResponse(w, 2, err)
 		return
 	}
 	slideManager := slide.NewSlideManager(ctx, &client, userId)
 	slideConfig, err := slideManager.GetInfo()
 	if err != nil {
-		networkUtils.ErrorStatus(w)
-		fmt.Fprintln(w, err)
+		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
 
 	tokenJson, err := json.Marshal(slideConfig)
 	if err != nil {
-		networkutil.ErrorStatus(w)
-		fmt.Fprintln(w, err)
+		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
 
@@ -122,30 +114,28 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 
 	headerData, err := networkUtils.GetHeader(w, r)
 	if err != nil {
-		fmt.Fprintln(w, err)
+		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
 	sessionToken, err := networkUtils.PickValue("SessionToken", headerData, w)
 	if err != nil {
-		fmt.Fprintln(w, err)
+		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
 	slideId, err := networkUtils.PickValue("SlideID", headerData, w)
 	if err != nil {
-		fmt.Fprintln(w, err)
+		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
 
 	userId, err := token.VerifySessionToken(ctx, client, sessionToken, tokenManagerName)
 	if err != nil {
-		networkUtils.ErrorStatus(w)
-		fmt.Fprintln(w, err)
+		networkUtils.ErrorResponse(w, 2, err)
 		return
 	}
 	slideManager := slide.NewSlideManager(ctx, &client, userId)
 	if err := slideManager.Delete(slideId); err != nil {
-		networkUtils.ErrorStatus(w)
-		fmt.Fprintln(w, err)
+		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
 }
