@@ -197,6 +197,8 @@ github.com/hello-slide/network-util v1.0.0 h1:Pqs5mzHp3g0Is4FuR3v+wsdq6B6P4y4F9J
 github.com/hello-slide/network-util v1.0.0/go.mod h1:TODPdsAOaIWAqenSG5aKVhobNmL84095TdQZ2LdNhhI=
 github.com/hello-slide/network-util v1.0.1 h1:oT+qNr6FQGZ0nWCk1QuF+bMZ9ZLuSTltvYz9YF4A4qk=
 github.com/hello-slide/network-util v1.0.1/go.mod h1:TODPdsAOaIWAqenSG5aKVhobNmL84095TdQZ2LdNhhI=
+github.com/hello-slide/network-util v1.0.2 h1:5YWc/wrEJFKRBo03Uo9Qi0XIGpFl/CkWp9RgpyeynSU=
+github.com/hello-slide/network-util v1.0.2/go.mod h1:TODPdsAOaIWAqenSG5aKVhobNmL84095TdQZ2LdNhhI=
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639 h1:mV02weKRL81bEnm8A0HT1/CAelMQDBuQIfLw8n+d6xI=
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
