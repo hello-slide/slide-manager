@@ -262,6 +262,8 @@ func (s *SlideManager) Rename(slideId string, newName string) error {
 	return fmt.Errorf("The slide does not exist.")
 }
 
+// func (s *SlideManager)
+
 // Delete slide.
 //
 // Arguments:
@@ -371,6 +373,40 @@ func (s *SlideManager) DeleteAll(storageOp storage.StorageOp) error {
 // - pageId: Id of page.
 // - storageOp: storage op instance
 func (s *SlideManager) DeletePage(slideId string, pageId string, storageOp storage.StorageOp) error {
+	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
+
+	getData, err := slideInfo.Get(slideId)
+	if err != nil {
+		return err
+	}
+
+	var slideData SlideData
+
+	if utf8.RuneCount(getData.Value) == 0 {
+		return fmt.Errorf("The slide does not exist.")
+	}
+
+	if err := json.Unmarshal(getData.Value, &slideData); err != nil {
+		return err
+	}
+	slideData.NumberOfPages--
+
+	deleteIndex, err := getIndexPage(slideData, pageId)
+	if err != nil {
+		return err
+	}
+	newPages := removePage(slideData.Pages, deleteIndex)
+	slideData.Pages = newPages
+
+	body, err := json.Marshal(slideData)
+	if err != nil {
+		return err
+	}
+
+	if err := slideInfo.Set(slideId, body); err != nil {
+		return err
+	}
+
 	filePath := []string{
 		"pages",
 		s.userId,
