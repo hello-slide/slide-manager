@@ -325,7 +325,7 @@ func setPageHandler(w http.ResponseWriter, r *http.Request) {
 		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
-	storageOp := _storage.NewStorageOp(ctx, *storageClient, "slide-data")
+	storageOp := _storage.NewStorageOp(ctx, *storageClient, "page-data")
 	if err := slideManager.SetPage([]byte(data), slideId, pageId, *storageOp); err != nil {
 		networkUtils.ErrorResponse(w, 1, err)
 		return
@@ -380,7 +380,7 @@ func getPageHandler(w http.ResponseWriter, r *http.Request) {
 		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
-	storageOp := _storage.NewStorageOp(ctx, *storageClient, "slide-data")
+	storageOp := _storage.NewStorageOp(ctx, *storageClient, "page-data")
 	data, err := slideManager.GetPage(slideId, pageId, *storageOp)
 	if err != nil {
 		networkUtils.ErrorResponse(w, 1, err)
@@ -429,7 +429,7 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
-	storageOp := _storage.NewStorageOp(ctx, *storageClient, "slide-data")
+	storageOp := _storage.NewStorageOp(ctx, *storageClient, "page-data")
 	if err := slideManager.Delete(slideId, *storageOp); err != nil {
 		networkUtils.ErrorResponse(w, 1, err)
 		return
@@ -462,7 +462,7 @@ func deleteAllHandler(w http.ResponseWriter, r *http.Request) {
 		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
-	storageOp := _storage.NewStorageOp(ctx, *storageClient, "slide-data")
+	storageOp := _storage.NewStorageOp(ctx, *storageClient, "page-data")
 	if err := slideManager.DeleteAll(*storageOp); err != nil {
 		networkUtils.ErrorResponse(w, 1, err)
 		return
@@ -505,7 +505,7 @@ func deletePageHandler(w http.ResponseWriter, r *http.Request) {
 		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
-	storageOp := _storage.NewStorageOp(ctx, *storageClient, "slide-data")
+	storageOp := _storage.NewStorageOp(ctx, *storageClient, "page-data")
 	if err := slideManager.DeletePage(slideId, pageId, *storageOp); err != nil {
 		networkUtils.ErrorResponse(w, 1, err)
 		return
