@@ -109,8 +109,57 @@ func (s *SlideManager) GetInfo() (*SlideConfig, error) {
 	}, nil
 }
 
-// func (s *SlideManager) GetSlideDetails(slideId string) error {}
+// Get slide detail data.
+//
+// Arguments:
+// - slideId: Id of slide.
+func (s *SlideManager) GetSlideDetails(slideId string) (*SlideData, error) {
+	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
+	getSlideData, err := slideInfo.Get(slideId)
+	if err != nil {
+		return nil, err
+	}
 
+	if utf8.RuneCount(getSlideData.Value) != 0 {
+		var slideData SlideData
+
+		if err := json.Unmarshal(getSlideData.Value, &slideData); err != nil {
+			return nil, err
+		}
+		return &slideData, nil
+	}
+	// Not exist
+	// Create Slide Data
+
+	slidesConfig, err := s.GetInfo()
+	targetIndex, err := getIndexSlideConfig(*slidesConfig, slideId)
+	if err != nil {
+		return nil, err
+	}
+	slideConfig := slidesConfig.Slides[targetIndex]
+
+	newSlideInfo := &SlideData{
+		NumberOfPages: 0,
+		Pages:         []PageData{},
+		SlideContent:  slideConfig,
+	}
+	body, err := json.Marshal(newSlideInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := slideInfo.Set(slideId, body); err != nil {
+		return nil, err
+	}
+
+	return newSlideInfo, nil
+}
+
+// Rename slide
+//
+// Arguments:
+// - slideId: slide id.
+// - newName: new name(title)
 func (s *SlideManager) Rename(slideId string, newName string) error {
 	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
 	getData, err := slideInfo.Get(s.userId)
@@ -126,14 +175,10 @@ func (s *SlideManager) Rename(slideId string, newName string) error {
 		}
 		slideConfig.NumberOfSlides--
 
-		var targetIndex int
-		for index, data := range slideConfig.Slides {
-			if data.Id == slideId {
-				targetIndex = index
-				break
-			}
+		targetIndex, err := getIndexSlideConfig(slideConfig, slideId)
+		if err != nil {
+			return err
 		}
-
 		slideConfig.Slides[targetIndex].Title = newName
 
 		body, err := json.Marshal(slideConfig)
@@ -168,12 +213,9 @@ func (s *SlideManager) Delete(slideId string) error {
 		}
 		slideConfig.NumberOfSlides--
 
-		var deleteIndex int
-		for index, data := range slideConfig.Slides {
-			if data.Id == slideId {
-				deleteIndex = index
-				break
-			}
+		deleteIndex, err := getIndexSlideConfig(slideConfig, slideId)
+		if err != nil {
+			return err
 		}
 		newSlides := removeSlides(slideConfig.Slides, deleteIndex)
 		slideConfig.Slides = newSlides
@@ -199,10 +241,4 @@ func (s *SlideManager) DeleteAll() error {
 		return err
 	}
 	return nil
-}
-
-// Pop element from list.
-func removeSlides(s []SlideContent, i int) []SlideContent {
-	s[i] = s[len(s)-1]
-	return s[:len(s)-1]
 }

@@ -2,8 +2,8 @@ package slide
 
 // Detailed information for each slide.
 type SlideData struct {
-	NumberOfPages int      `json:"number_of_pages"`
-	Indexes       []string `json:"indexes"`
+	NumberOfPages int        `json:"number_of_pages"`
+	Pages         []PageData `json:"pages"`
 	SlideContent
 }
 

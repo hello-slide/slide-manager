@@ -104,6 +104,47 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func detailsHandler(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	headerData, err := networkUtils.GetHeader(w, r)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	sessionToken, err := networkUtils.PickValue("SessionToken", headerData, w)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	slideId, err := networkUtils.PickValue("SlideID", headerData, w)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	userId, err := token.VerifySessionToken(ctx, client, sessionToken, tokenManagerName)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 2, err)
+		return
+	}
+	slideManager := slide.NewSlideManager(ctx, &client, userId)
+	slideDetails, err := slideManager.GetSlideDetails(slideId)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+
+	tokenJson, err := json.Marshal(slideDetails)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(tokenJson)
+}
+
 func renameHandler(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -224,6 +265,7 @@ func main() {
 	mux.HandleFunc("/", rootHandler)
 	mux.HandleFunc("/slide/create", createHandler)
 	mux.HandleFunc("/slide/list", listHandler)
+	mux.HandleFunc("/slide/details", detailsHandler)
 	mux.HandleFunc("/slide/rename", renameHandler)
 	mux.HandleFunc("/slide/edit", editHandler)
 	mux.HandleFunc("/slide/delete", deleteHandler)
