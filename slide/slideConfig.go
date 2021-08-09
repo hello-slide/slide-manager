@@ -7,6 +7,11 @@ type SlideData struct {
 	SlideContent
 }
 
+type PageData struct {
+	PageId string `json:"page_id"`
+	Type   string `json:"type"`
+}
+
 // Information for each slide.
 type SlideContent struct {
 	Title      string `json:"title"`

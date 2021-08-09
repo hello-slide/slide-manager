@@ -109,6 +109,46 @@ func (s *SlideManager) GetInfo() (*SlideConfig, error) {
 	}, nil
 }
 
+// func (s *SlideManager) GetSlideDetails(slideId string) error {}
+
+func (s *SlideManager) Rename(slideId string, newName string) error {
+	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
+	getData, err := slideInfo.Get(s.userId)
+	if err != nil {
+		return err
+	}
+
+	var slideConfig SlideConfig
+
+	if utf8.RuneCount(getData.Value) != 0 {
+		if err := json.Unmarshal(getData.Value, &slideConfig); err != nil {
+			return err
+		}
+		slideConfig.NumberOfSlides--
+
+		var targetIndex int
+		for index, data := range slideConfig.Slides {
+			if data.Id == slideId {
+				targetIndex = index
+				break
+			}
+		}
+
+		slideConfig.Slides[targetIndex].Title = newName
+
+		body, err := json.Marshal(slideConfig)
+		if err != nil {
+			return err
+		}
+
+		if err := slideInfo.Set(s.userId, body); err != nil {
+			return err
+		}
+		return nil
+	}
+	return fmt.Errorf("The slide does not exist.")
+}
+
 // Delete slide.
 //
 // Arguments:
@@ -146,10 +186,10 @@ func (s *SlideManager) Delete(slideId string) error {
 		if err := slideInfo.Set(s.userId, body); err != nil {
 			return err
 		}
-	} else {
-		return fmt.Errorf("The slide does not exist.")
+		return nil
 	}
-	return nil
+	return fmt.Errorf("The slide does not exist.")
+
 }
 
 // Delete All slide.
