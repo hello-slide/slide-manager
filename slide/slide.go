@@ -266,6 +266,7 @@ func (s *SlideManager) Rename(slideId string, newName string) error {
 //
 // Arguments:
 // - slideId: Id of slide.
+// - storageOp: storage op instance
 func (s *SlideManager) Delete(slideId string, storageOp storage.StorageOp) error {
 	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
 
@@ -322,6 +323,9 @@ func (s *SlideManager) Delete(slideId string, storageOp storage.StorageOp) error
 }
 
 // Delete All slide.
+//
+// Arguments:
+// - storageOp: storage op instance
 func (s *SlideManager) DeleteAll(storageOp storage.StorageOp) error {
 	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
 
@@ -360,6 +364,12 @@ func (s *SlideManager) DeleteAll(storageOp storage.StorageOp) error {
 	return nil
 }
 
+// Delete page.
+//
+// Arguments:
+// - slideId: Id of slide.
+// - pageId: Id of page.
+// - storageOp: storage op instance
 func (s *SlideManager) DeletePage(slideId string, pageId string, storageOp storage.StorageOp) error {
 	filePath := []string{
 		"pages",

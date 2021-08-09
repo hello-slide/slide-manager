@@ -416,6 +416,49 @@ func deleteAllHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func deletePageHandler(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	headerData, err := networkUtils.GetHeader(w, r)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	sessionToken, err := networkUtils.PickValue("SessionToken", headerData, w)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	slideId, err := networkUtils.PickValue("SlideID", headerData, w)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	pageId, err := networkUtils.PickValue("PageID", headerData, w)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+
+	userId, err := token.VerifySessionToken(ctx, client, sessionToken, tokenManagerName)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 2, err)
+		return
+	}
+	slideManager := slide.NewSlideManager(ctx, &client, userId)
+	storageClient, err := _storage.CreateClient(ctx)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	storageOp := _storage.NewStorageOp(ctx, *storageClient, "SlideData")
+	if err := slideManager.DeletePage(slideId, pageId, *storageOp); err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+}
+
 func init() {
 	ctx := context.Background()
 
@@ -447,6 +490,7 @@ func main() {
 
 	mux.HandleFunc("/slide/delete", deleteHandler)
 	mux.HandleFunc("/slide/deleteall", deleteAllHandler)
+	mux.HandleFunc("/slide/deletepage", deletePageHandler)
 
 	handler := networkUtils.CorsConfig.Handler(mux)
 
