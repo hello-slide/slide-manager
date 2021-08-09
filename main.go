@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"strconv"
 
 	"cloud.google.com/go/storage"
 	dapr "github.com/dapr/go-sdk/client"
@@ -149,7 +150,6 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(tokenJson)
-
 }
 
 func detailsHandler(w http.ResponseWriter, r *http.Request) {
@@ -225,6 +225,59 @@ func renameHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	slideManager := slide.NewSlideManager(ctx, &client, userId)
 	if err := slideManager.Rename(slideId, newName); err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+}
+
+func swapHandler(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	headerData, err := networkUtils.GetHeader(w, r)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	sessionToken, err := networkUtils.PickValue("SessionToken", headerData, w)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	slideId, err := networkUtils.PickValue("SlideID", headerData, w)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	origin, err := networkUtils.PickValue("Origin", headerData, w)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	target, err := networkUtils.PickValue("Target", headerData, w)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+
+	originInt, err := strconv.Atoi(origin)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	targetInt, err := strconv.Atoi(target)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+
+	userId, err := token.VerifySessionToken(ctx, client, sessionToken, tokenManagerName)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 2, err)
+		return
+	}
+	slideManager := slide.NewSlideManager(ctx, &client, userId)
+	if err := slideManager.SwapPage(slideId, originInt, targetInt); err != nil {
 		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
@@ -484,6 +537,7 @@ func main() {
 	mux.HandleFunc("/slide/list", listHandler)
 	mux.HandleFunc("/slide/details", detailsHandler)
 	mux.HandleFunc("/slide/rename", renameHandler)
+	mux.HandleFunc("/slide/swap", swapHandler)
 
 	mux.HandleFunc("/slide/setpage", setPageHandler)
 	mux.HandleFunc("/slide/getpage", getPageHandler)

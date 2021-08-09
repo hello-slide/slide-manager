@@ -262,7 +262,36 @@ func (s *SlideManager) Rename(slideId string, newName string) error {
 	return fmt.Errorf("The slide does not exist.")
 }
 
-// func (s *SlideManager)
+// Swap pages
+//
+// Arguments:
+// - slideId: Id of slide,
+// - origin: origin index.
+// - target: target index.
+func (s *SlideManager) SwapPage(slideId string, origin int, target int) error {
+	slideData, err := s.GetSlideDetails(slideId)
+	if err != nil {
+		return err
+	}
+
+	if origin >= len(slideData.Pages) || target >= len(slideData.Pages) || origin < 0 || target < 0 {
+		return fmt.Errorf("The specified index is out of range.")
+	}
+
+	buffer := slideData.Pages[origin]
+	slideData.Pages[origin] = slideData.Pages[target]
+	slideData.Pages[target] = buffer
+
+	body, err := json.Marshal(slideData)
+	if err != nil {
+		return err
+	}
+	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
+	if err := slideInfo.Set(slideId, []byte(body)); err != nil {
+		return err
+	}
+	return nil
+}
 
 // Delete slide.
 //
