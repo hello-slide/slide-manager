@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 	"unicode/utf8"
 
@@ -265,8 +266,10 @@ func (s *SlideManager) Rename(slideId string, newName string) error {
 //
 // Arguments:
 // - slideId: Id of slide.
-func (s *SlideManager) Delete(slideId string) error {
+func (s *SlideManager) Delete(slideId string, storageOp storage.StorageOp) error {
 	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
+
+	// delete slide config
 	getData, err := slideInfo.Get(s.userId)
 	if err != nil {
 		return err
@@ -274,37 +277,97 @@ func (s *SlideManager) Delete(slideId string) error {
 
 	var slideConfig SlideConfig
 
-	if utf8.RuneCount(getData.Value) != 0 {
-		if err := json.Unmarshal(getData.Value, &slideConfig); err != nil {
-			return err
-		}
-		slideConfig.NumberOfSlides--
-
-		deleteIndex, err := getIndexSlideConfig(slideConfig, slideId)
-		if err != nil {
-			return err
-		}
-		newSlides := removeSlides(slideConfig.Slides, deleteIndex)
-		slideConfig.Slides = newSlides
-
-		body, err := json.Marshal(slideConfig)
-		if err != nil {
-			return err
-		}
-
-		if err := slideInfo.Set(s.userId, body); err != nil {
-			return err
-		}
-		return nil
+	if utf8.RuneCount(getData.Value) == 0 {
+		return fmt.Errorf("The slide does not exist.")
 	}
-	return fmt.Errorf("The slide does not exist.")
+
+	if err := json.Unmarshal(getData.Value, &slideConfig); err != nil {
+		return err
+	}
+	slideConfig.NumberOfSlides--
+
+	deleteIndex, err := getIndexSlideConfig(slideConfig, slideId)
+	if err != nil {
+		return err
+	}
+	newSlides := removeSlides(slideConfig.Slides, deleteIndex)
+	slideConfig.Slides = newSlides
+
+	body, err := json.Marshal(slideConfig)
+	if err != nil {
+		return err
+	}
+
+	if err := slideInfo.Set(s.userId, body); err != nil {
+		return err
+	}
+
+	// delete slide page info
+	if err := slideInfo.Delete(slideId); err != nil {
+		return err
+	}
+
+	// Delete page data.
+	filePath := []string{
+		"pages",
+		s.userId,
+		slideId,
+	}
+	if err := storageOp.Delete(strings.Join(filePath, "/")); err != nil {
+		return err
+	}
+
+	return nil
 
 }
 
 // Delete All slide.
-func (s *SlideManager) DeleteAll() error {
+func (s *SlideManager) DeleteAll(storageOp storage.StorageOp) error {
 	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
+
+	slideData, err := slideInfo.Get(s.userId)
+	var slideConfig SlideConfig
+
+	if utf8.RuneCount(slideData.Value) == 0 {
+		return fmt.Errorf("The slide does not exist.")
+	}
+
+	if err := json.Unmarshal(slideData.Value, &slideConfig); err != nil {
+		return err
+	}
+
+	if err != nil {
+		return err
+	}
+	for _, pageId := range slideConfig.Slides {
+		if err := slideInfo.Delete(pageId.Id); err != nil {
+			return err
+		}
+	}
+
 	if err := slideInfo.Delete(s.userId); err != nil {
+		return err
+	}
+
+	// Delete page data.
+	filePath := []string{
+		"pages",
+		s.userId,
+	}
+	if err := storageOp.Delete(strings.Join(filePath, "/")); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *SlideManager) DeletePage(slideId string, pageId string, storageOp storage.StorageOp) error {
+	filePath := []string{
+		"pages",
+		s.userId,
+		slideId,
+		pageId,
+	}
+	if err := storageOp.Delete(strings.Join(filePath, "/")); err != nil {
 		return err
 	}
 	return nil

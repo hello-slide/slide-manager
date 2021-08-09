@@ -371,7 +371,13 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	slideManager := slide.NewSlideManager(ctx, &client, userId)
-	if err := slideManager.Delete(slideId); err != nil {
+	storageClient, err := _storage.CreateClient(ctx)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	storageOp := _storage.NewStorageOp(ctx, *storageClient, "SlideData")
+	if err := slideManager.Delete(slideId, *storageOp); err != nil {
 		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
@@ -398,7 +404,13 @@ func deleteAllHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	slideManager := slide.NewSlideManager(ctx, &client, userId)
-	if err := slideManager.DeleteAll(); err != nil {
+	storageClient, err := _storage.CreateClient(ctx)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	storageOp := _storage.NewStorageOp(ctx, *storageClient, "SlideData")
+	if err := slideManager.DeleteAll(*storageOp); err != nil {
 		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
