@@ -35,7 +35,7 @@ func NewSlideManager(ctx context.Context, daprClient *client.Client, userId stri
 // Return:
 // - id string: Slide id
 func (s *SlideManager) Create(title string) (string, error) {
-	slideId, err := token.CreateSlideId(title)
+	slideId, err := token.CreateId(title)
 	if err != nil {
 		return "", err
 	}
@@ -50,39 +50,58 @@ func (s *SlideManager) Create(title string) (string, error) {
 		CreateDate: nowJST.Format("20060102150405"),
 		ChangeDate: nowJST.Format("20060102150405"),
 	}
-	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
-	getData, err := slideInfo.Get(s.userId)
+
+	slideConfig, err := s.GetInfo()
 	if err != nil {
 		return "", err
 	}
 
-	var slideConfig SlideConfig
-
-	if utf8.RuneCount(getData.Value) != 0 {
-		if err := json.Unmarshal(getData.Value, &slideConfig); err != nil {
-			return "", err
-		}
-		slideConfig.NumberOfSlides++
-		slideConfig.Slides = append(slideConfig.Slides, slideContent)
-	} else {
-		slideConfig = SlideConfig{
-			NumberOfSlides: 1,
-			Slides: []SlideContent{
-				slideContent,
-			},
-		}
-	}
+	slideConfig.NumberOfSlides++
+	slideConfig.Slides = append(slideConfig.Slides, slideContent)
 
 	body, err := json.Marshal(slideConfig)
 	if err != nil {
 		return "", err
 	}
 
+	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
 	if err := slideInfo.Set(s.userId, body); err != nil {
 		return "", err
 	}
 
 	return slideId, nil
+}
+
+func (s *SlideManager) CreatePage(slideId string, pageType string) (*PageData, error) {
+	slideDetails, err := s.GetSlideDetails(slideId)
+	if err != nil {
+		return nil, err
+	}
+
+	pageId, err := token.CreateId(slideId)
+	if err != nil {
+		return nil, err
+	}
+
+	pageDate := &PageData{
+		PageId: pageId,
+		Type:   pageType,
+	}
+
+	slideDetails.NumberOfPages++
+	slideDetails.Pages = append(slideDetails.Pages, *pageDate)
+
+	body, err := json.Marshal(slideDetails)
+	if err != nil {
+		return nil, err
+	}
+
+	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
+	if err := slideInfo.Set(slideId, body); err != nil {
+		return nil, err
+	}
+
+	return pageDate, nil
 }
 
 // Get Slides infomation of user.

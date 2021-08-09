@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func CreateSlideId(title string) (string, error) {
+func CreateId(title string) (string, error) {
 	var strBuild strings.Builder
 
 	strBuild.WriteString(title)
