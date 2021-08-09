@@ -230,8 +230,64 @@ func renameHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func editHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello World"))
+func setPageHandler(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	headerData, err := networkUtils.GetHeader(w, r)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	sessionToken, err := networkUtils.PickValue("SessionToken", headerData, w)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	slideId, err := networkUtils.PickValue("SlideID", headerData, w)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	pageId, err := networkUtils.PickValue("PageID", headerData, w)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	data, err := networkUtils.PickValue("Data", headerData, w)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+
+	userId, err := token.VerifySessionToken(ctx, client, sessionToken, tokenManagerName)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 2, err)
+		return
+	}
+
+	slideManager := slide.NewSlideManager(ctx, &client, userId)
+	storageClient, err := _storage.CreateClient(ctx)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	storageOp := _storage.NewStorageOp(ctx, *storageClient, "SlideData")
+	if err := slideManager.SetPage([]byte(data), slideId, pageId, *storageOp); err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+
+	tokenJson, err := json.Marshal(map[string]string{
+		"slide_id": slideId,
+	})
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(tokenJson)
 }
 
 func deleteHandler(w http.ResponseWriter, r *http.Request) {
@@ -319,7 +375,7 @@ func main() {
 	mux.HandleFunc("/slide/details", detailsHandler)
 	mux.HandleFunc("/slide/rename", renameHandler)
 
-	mux.HandleFunc("/slide/edit", editHandler)
+	mux.HandleFunc("/slide/setpage", setPageHandler)
 
 	mux.HandleFunc("/slide/delete", deleteHandler)
 	mux.HandleFunc("/slide/deleteall", deleteAllHandler)

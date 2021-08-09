@@ -9,6 +9,7 @@ import (
 
 	"github.com/dapr/go-sdk/client"
 	"github.com/hello-slide/slide-manager/state"
+	"github.com/hello-slide/slide-manager/storage"
 	"github.com/hello-slide/slide-manager/token"
 )
 
@@ -72,6 +73,11 @@ func (s *SlideManager) Create(title string) (string, error) {
 	return slideId, nil
 }
 
+// Create Page
+//
+// Arguments:
+// - slideId: Id of slide.
+// - pageType: page type.
 func (s *SlideManager) CreatePage(slideId string, pageType string) (*PageData, error) {
 	slideDetails, err := s.GetSlideDetails(slideId)
 	if err != nil {
@@ -102,6 +108,25 @@ func (s *SlideManager) CreatePage(slideId string, pageType string) (*PageData, e
 	}
 
 	return pageDate, nil
+}
+
+// Write page data.
+//
+// Arguments:
+// - data: page data.
+// - slideId: Id of slide.
+// - pageId: Id of page.
+// - storageOp: storage op instance
+func (s *SlideManager) SetPage(data []byte, slideId string, pageId string, storageOp storage.StorageOp) error {
+	dirs := []string{
+		"pages",
+		s.userId,
+		slideId,
+	}
+	if err := storageOp.WriteFile(dirs, pageId, data); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Get Slides infomation of user.
@@ -172,6 +197,29 @@ func (s *SlideManager) GetSlideDetails(slideId string) (*SlideData, error) {
 	}
 
 	return newSlideInfo, nil
+}
+
+// Get page data.
+//
+// Arguments:
+// - slideId: Id of slide.
+// - pageId: Id of page.
+// - storageOp: storage op instance
+func (s *SlideManager) GetPage(slideId string, pageId string, storageOp storage.StorageOp) ([]byte, error) {
+	dirs := []string{
+		"pages",
+		s.userId,
+		slideId,
+	}
+	isExist, err := storageOp.FileExist(dirs, pageId)
+	if err != nil {
+		return nil, err
+	}
+
+	if isExist {
+		return storageOp.ReadFile(dirs, pageId)
+	}
+	return nil, fmt.Errorf("Page data is not exist.")
 }
 
 // Rename slide
