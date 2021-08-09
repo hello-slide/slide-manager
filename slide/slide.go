@@ -152,6 +152,15 @@ func (s *SlideManager) Delete(slideId string) error {
 	return nil
 }
 
+// Delete All slide.
+func (s *SlideManager) DeleteAll() error {
+	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
+	if err := slideInfo.Delete(s.userId); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Pop element from list.
 func removeSlides(s []SlideContent, i int) []SlideContent {
 	s[i] = s[len(s)-1]

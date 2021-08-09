@@ -140,6 +140,33 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func deleteAllHandler(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	headerData, err := networkUtils.GetHeader(w, r)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	sessionToken, err := networkUtils.PickValue("SessionToken", headerData, w)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+
+	userId, err := token.VerifySessionToken(ctx, client, sessionToken, tokenManagerName)
+	if err != nil {
+		networkUtils.ErrorResponse(w, 2, err)
+		return
+	}
+	slideManager := slide.NewSlideManager(ctx, &client, userId)
+	if err := slideManager.DeleteAll(); err != nil {
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+}
+
 func init() {
 	ctx := context.Background()
 
@@ -162,6 +189,7 @@ func main() {
 	mux.HandleFunc("/slide/list", listHandler)
 	mux.HandleFunc("/slide/edit", editHandler)
 	mux.HandleFunc("/slide/delete", deleteHandler)
+	mux.HandleFunc("/slide/deleteall", deleteAllHandler)
 
 	handler := networkUtils.CorsConfig.Handler(mux)
 

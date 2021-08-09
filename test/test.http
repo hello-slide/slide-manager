@@ -1,1 +1,2 @@
-GET https://api.hello-slide.jp/slide/
+
+GET https://api.hello-slide.jp/slide/create
