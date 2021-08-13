@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 	"unicode/utf8"
 
 	"github.com/dapr/go-sdk/client"
@@ -41,16 +40,14 @@ func (s *SlideManager) Create(title string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	now := time.Now()
-	nowUTC := now.UTC()
-	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-	nowJST := nowUTC.In(jst)
+
+	dateOp := newDateOp()
 
 	slideContent := SlideContent{
 		Title:      title,
 		Id:         slideId,
-		CreateDate: nowJST.Format("20060102150405"),
-		ChangeDate: nowJST.Format("20060102150405"),
+		CreateDate: dateOp.getDateJST(),
+		ChangeDate: dateOp.getDateJST(),
 	}
 
 	slideConfig, err := s.GetInfo()
@@ -98,6 +95,9 @@ func (s *SlideManager) CreatePage(slideId string, pageType string) (*PageData, e
 	slideDetails.NumberOfPages++
 	slideDetails.Pages = append(slideDetails.Pages, *pageDate)
 
+	dateOp := newDateOp()
+	slideDetails.ChangeDate = dateOp.getDateJST()
+
 	body, err := json.Marshal(slideDetails)
 	if err != nil {
 		return nil, err
@@ -105,6 +105,10 @@ func (s *SlideManager) CreatePage(slideId string, pageType string) (*PageData, e
 
 	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
 	if err := slideInfo.Set(slideId, body); err != nil {
+		return nil, err
+	}
+
+	if err := s.changedDateUpdate(true, false, slideId); err != nil {
 		return nil, err
 	}
 
@@ -281,6 +285,9 @@ func (s *SlideManager) SwapPage(slideId string, origin int, target int) error {
 	slideData.Pages[origin] = slideData.Pages[target]
 	slideData.Pages[target] = buffer
 
+	dateOp := newDateOp()
+	slideData.ChangeDate = dateOp.getDateJST()
+
 	body, err := json.Marshal(slideData)
 	if err != nil {
 		return err
@@ -289,6 +296,11 @@ func (s *SlideManager) SwapPage(slideId string, origin int, target int) error {
 	if err := slideInfo.Set(slideId, []byte(body)); err != nil {
 		return err
 	}
+
+	if err := s.changedDateUpdate(true, false, slideId); err != nil {
+		return nil
+	}
+
 	return nil
 }
 
@@ -418,6 +430,8 @@ func (s *SlideManager) DeletePage(slideId string, pageId string, storageOp stora
 		return err
 	}
 	slideData.NumberOfPages--
+	dateOp := newDateOp()
+	slideData.ChangeDate = dateOp.getDateJST()
 
 	deleteIndex, err := getIndexPage(slideData, pageId)
 	if err != nil {
@@ -435,6 +449,10 @@ func (s *SlideManager) DeletePage(slideId string, pageId string, storageOp stora
 		return err
 	}
 
+	if err := s.changedDateUpdate(true, false, slideId); err != nil {
+		return err
+	}
+
 	filePath := []string{
 		"pages",
 		s.userId,
@@ -443,6 +461,56 @@ func (s *SlideManager) DeletePage(slideId string, pageId string, storageOp stora
 	}
 	if err := storageOp.Delete(strings.Join(filePath, "/")); err != nil {
 		return err
+	}
+	return nil
+}
+
+// Update `change_date`
+//
+// Arguments:
+// - isInfo: If set to true, the user's slide database will be updated.
+// - isDetails: If set to true, the detailed database for that slide will be updated.
+// - slideId: Id of slide.
+func (s *SlideManager) changedDateUpdate(isInfo bool, isDetails bool, slideId string) error {
+	dateOp := newDateOp()
+	if isInfo {
+		slideInfo, err := s.GetInfo()
+		if err != nil {
+			return err
+		}
+		targetIndex, err := getIndexSlideConfig(*slideInfo, slideId)
+		if err != nil {
+			return err
+		}
+		slideInfo.Slides[targetIndex].ChangeDate = dateOp.getDateJST()
+
+		body, err := json.Marshal(slideInfo)
+		if err != nil {
+			return err
+		}
+
+		_slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
+		if err := _slideInfo.Set(s.userId, body); err != nil {
+			return err
+		}
+	}
+
+	if isDetails {
+		slideDetails, err := s.GetSlideDetails(slideId)
+		if err != nil {
+			return err
+		}
+		slideDetails.ChangeDate = dateOp.getDateJST()
+
+		body, err := json.Marshal(slideDetails)
+		if err != nil {
+			return err
+		}
+
+		slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
+		if err := slideInfo.Set(slideId, body); err != nil {
+			return err
+		}
 	}
 	return nil
 }
