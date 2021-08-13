@@ -241,7 +241,6 @@ func (s *SlideManager) Rename(slideId string, newName string) error {
 		if err := json.Unmarshal(getData.Value, &slideConfig); err != nil {
 			return err
 		}
-		slideConfig.NumberOfSlides--
 
 		targetIndex, err := getIndexSlideConfig(slideConfig, slideId)
 		if err != nil {
