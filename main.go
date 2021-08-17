@@ -330,17 +330,6 @@ func setPageHandler(w http.ResponseWriter, r *http.Request) {
 		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
-
-	tokenJson, err := json.Marshal(map[string]string{
-		"slide_id": slideId,
-	})
-	if err != nil {
-		networkUtils.ErrorResponse(w, 1, err)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(tokenJson)
 }
 
 func getPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -384,13 +373,6 @@ func getPageHandler(w http.ResponseWriter, r *http.Request) {
 	data, err := slideManager.GetPage(slideId, pageId, *storageOp)
 	if err != nil {
 		networkUtils.ErrorResponse(w, 1, err)
-		return
-	}
-
-	tokenJson, err := json.Marshal(data)
-	if err == nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(tokenJson)
 		return
 	}
 

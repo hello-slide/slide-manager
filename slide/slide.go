@@ -224,7 +224,7 @@ func (s *SlideManager) GetPage(slideId string, pageId string, storageOp storage.
 	if isExist {
 		return storageOp.ReadFile(dirs, pageId)
 	}
-	return nil, fmt.Errorf("Page data is not exist.")
+	return []byte(""), nil
 }
 
 // Rename slide
