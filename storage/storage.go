@@ -20,8 +20,8 @@ type StorageOp struct {
 }
 
 // Create Google Cloud Storage operation handler.
-func NewStorageOp(ctx context.Context, client storage.Client, buketName string) *StorageOp {
-	rc := client.Bucket(buketName)
+func NewStorageOp(ctx context.Context, client storage.Client, bucketName string) *StorageOp {
+	rc := client.Bucket(bucketName)
 
 	return &StorageOp{
 		ctx: ctx,
@@ -70,10 +70,13 @@ func (s *StorageOp) ReadFile(dirs []string, fileName string) ([]byte, error) {
 func (s *StorageOp) WriteFile(dirs []string, fileName string, body []byte) error {
 	object := s.Object(dirs, fileName)
 	writer := object.NewWriter(s.ctx)
-	defer writer.Close()
 
 	_, err := writer.Write(body)
 	if err != nil {
+		return err
+	}
+
+	if err := writer.Close(); err != nil {
 		return err
 	}
 	return nil
@@ -96,6 +99,18 @@ func (s *StorageOp) Delete(prefix string) error {
 		if err := s.rc.Object(attrs.Name).Delete(s.ctx); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+// disable to versioning.
+func (s *StorageOp) DisableVersioning() error {
+	bucketAttrsToUpdate := storage.BucketAttrsToUpdate{
+		VersioningEnabled: false,
+	}
+
+	if _, err := s.rc.Update(s.ctx, bucketAttrsToUpdate); err != nil {
+		return err
 	}
 	return nil
 }
