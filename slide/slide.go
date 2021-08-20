@@ -238,6 +238,7 @@ func (s *SlideManager) GetPage(slideId string, pageId string, storageOp storage.
 // - newName: new name(title)
 func (s *SlideManager) Rename(slideId string, newName string) error {
 	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
+
 	getData, err := slideInfo.Get(s.userId)
 	if err != nil {
 		return err
@@ -245,26 +246,52 @@ func (s *SlideManager) Rename(slideId string, newName string) error {
 
 	var slideConfig SlideConfig
 
-	if utf8.RuneCount(getData.Value) != 0 {
-		if err := json.Unmarshal(getData.Value, &slideConfig); err != nil {
-			return err
-		}
+	if utf8.RuneCount(getData.Value) == 0 {
+		return fmt.Errorf("The slide does not exist.")
+	}
+	if err := json.Unmarshal(getData.Value, &slideConfig); err != nil {
+		return err
+	}
 
-		targetIndex, err := getIndexSlideConfig(slideConfig, slideId)
-		if err != nil {
-			return err
-		}
-		slideConfig.Slides[targetIndex].Title = newName
+	targetIndex, err := getIndexSlideConfig(slideConfig, slideId)
+	if err != nil {
+		return err
+	}
+	slideConfig.Slides[targetIndex].Title = newName
 
-		body, err := json.Marshal(slideConfig)
-		if err != nil {
-			return err
-		}
+	body, err := json.Marshal(slideConfig)
+	if err != nil {
+		return err
+	}
 
-		if err := slideInfo.Set(s.userId, body); err != nil {
-			return err
-		}
-		return nil
+	if err := slideInfo.Set(s.userId, body); err != nil {
+		return err
+	}
+
+	// change slide details.
+	_slideData, err := slideInfo.Get(slideId)
+	if err != nil {
+		return err
+	}
+
+	if utf8.RuneCount(_slideData.Value) == 0 {
+		return fmt.Errorf("The slide does not exist.")
+	}
+
+	var slideData SlideData
+
+	if err := json.Unmarshal(_slideData.Value, &slideData); err != nil {
+		return err
+	}
+	slideData.Title = newName
+
+	body, err = json.Marshal(slideConfig)
+	if err != nil {
+		return err
+	}
+
+	if err := slideInfo.Set(slideId, body); err != nil {
+		return err
 	}
 	return fmt.Errorf("The slide does not exist.")
 }
