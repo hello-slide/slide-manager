@@ -285,7 +285,7 @@ func (s *SlideManager) Rename(slideId string, newName string) error {
 	}
 	slideData.Title = newName
 
-	body, err = json.Marshal(slideConfig)
+	body, err = json.Marshal(slideData)
 	if err != nil {
 		return err
 	}
@@ -293,7 +293,8 @@ func (s *SlideManager) Rename(slideId string, newName string) error {
 	if err := slideInfo.Set(slideId, body); err != nil {
 		return err
 	}
-	return fmt.Errorf("The slide does not exist.")
+
+	return nil
 }
 
 // Swap pages
