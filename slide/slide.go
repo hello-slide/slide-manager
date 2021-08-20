@@ -131,6 +131,9 @@ func (s *SlideManager) SetPage(data []byte, slideId string, pageId string, stora
 	if err := storageOp.WriteFile(dirs, pageId, data); err != nil {
 		return err
 	}
+	if err := s.changedDateUpdate(true, true, slideId); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -224,6 +227,7 @@ func (s *SlideManager) GetPage(slideId string, pageId string, storageOp storage.
 	if isExist {
 		return storageOp.ReadFile(dirs, pageId)
 	}
+
 	return []byte(""), nil
 }
 
