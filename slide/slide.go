@@ -407,7 +407,8 @@ func (s *SlideManager) DeleteAll(storageOp storage.StorageOp) error {
 	var slideConfig SlideConfig
 
 	if utf8.RuneCount(slideData.Value) == 0 {
-		return fmt.Errorf("The slide does not exist.")
+		// If the database with userId as Key does not exist, the slide data is empty.
+		return nil
 	}
 
 	if err := json.Unmarshal(slideData.Value, &slideConfig); err != nil {
