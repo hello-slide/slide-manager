@@ -7,7 +7,7 @@ require (
 	cloud.google.com/go/storage v1.16.0
 	github.com/dapr/go-sdk v1.2.0
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/hello-slide/network-util v1.0.5
+	github.com/hello-slide/network-util v1.0.6
 	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f // indirect
 	golang.org/x/sys v0.0.0-20210806184541-e5e7981a1069 // indirect

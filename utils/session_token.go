@@ -32,7 +32,8 @@ func GetSessonToken(
 	apiUrl string,
 	handlePath string) (string, error) {
 
-	tokenOp := networkutil.NewTokenOp()
+	domain := strings.Split(apiUrl, "//")[1]
+	tokenOp := networkutil.NewTokenOp(domain)
 	sessionToken, err := tokenOp.GetSessionToken(r)
 	if err != nil {
 		return "", err
