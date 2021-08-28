@@ -18,11 +18,6 @@ func RenameHandler(w http.ResponseWriter, r *http.Request) {
 		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
-	sessionToken, err := networkUtils.PickValue("SessionToken", headerData, w)
-	if err != nil {
-		networkUtils.ErrorResponse(w, 1, err)
-		return
-	}
 	slideId, err := networkUtils.PickValue("SlideID", headerData, w)
 	if err != nil {
 		networkUtils.ErrorResponse(w, 1, err)
@@ -34,11 +29,15 @@ func RenameHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, err := utils.VerifySessionToken(ctx, client, sessionToken, tokenManagerName)
+	userId, err := utils.GetSessonToken(ctx, client, w, r, tokenManagerName, url, "/slide/rename")
 	if err != nil {
-		networkUtils.ErrorResponse(w, 2, err)
+		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
+	if len(userId) == 0 {
+		return
+	}
+
 	slideManager := slide.NewSlideManager(ctx, &client, userId)
 	if err := slideManager.Rename(slideId, newName); err != nil {
 		networkUtils.ErrorResponse(w, 1, err)
