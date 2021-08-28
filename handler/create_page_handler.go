@@ -19,11 +19,6 @@ func CreatePageHandler(w http.ResponseWriter, r *http.Request) {
 		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
-	sessionToken, err := networkUtils.PickValue("SessionToken", headerData, w)
-	if err != nil {
-		networkUtils.ErrorResponse(w, 1, err)
-		return
-	}
 	pageType, err := networkUtils.PickValue("PageType", headerData, w)
 	if err != nil {
 		networkUtils.ErrorResponse(w, 1, err)
@@ -35,9 +30,12 @@ func CreatePageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, err := utils.VerifySessionToken(ctx, client, sessionToken, tokenManagerName)
+	userId, err := utils.GetSessonToken(ctx, client, w, r, tokenManagerName, url, "/slide/createpage")
 	if err != nil {
-		networkUtils.ErrorResponse(w, 2, err)
+		networkUtils.ErrorResponse(w, 1, err)
+		return
+	}
+	if len(userId) == 0 {
 		return
 	}
 
