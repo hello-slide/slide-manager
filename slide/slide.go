@@ -184,6 +184,9 @@ func (s *SlideManager) GetSlideDetails(slideId string) (*SlideData, error) {
 	// Create Slide Data
 
 	slidesConfig, err := s.GetInfo()
+	if err != nil {
+		return nil, err
+	}
 	targetIndex, err := getIndexSlideConfig(*slidesConfig, slideId)
 	if err != nil {
 		return nil, err
@@ -247,7 +250,7 @@ func (s *SlideManager) Rename(slideId string, newName string) error {
 	var slideConfig SlideConfig
 
 	if utf8.RuneCount(getData.Value) == 0 {
-		return fmt.Errorf("The slide does not exist.")
+		return fmt.Errorf("the slide does not exist")
 	}
 	if err := json.Unmarshal(getData.Value, &slideConfig); err != nil {
 		return err
@@ -275,7 +278,7 @@ func (s *SlideManager) Rename(slideId string, newName string) error {
 	}
 
 	if utf8.RuneCount(_slideData.Value) == 0 {
-		return fmt.Errorf("The slide does not exist.")
+		return fmt.Errorf("the slide does not exist")
 	}
 
 	var slideData SlideData
@@ -310,7 +313,7 @@ func (s *SlideManager) SwapPage(slideId string, origin int, target int) error {
 	}
 
 	if origin >= len(slideData.Pages) || target >= len(slideData.Pages) || origin < 0 || target < 0 {
-		return fmt.Errorf("The specified index is out of range.")
+		return fmt.Errorf("the specified index is out of range")
 	}
 
 	buffer := slideData.Pages[origin]
@@ -353,7 +356,7 @@ func (s *SlideManager) Delete(slideId string, storageOp storage.StorageOp) error
 	var slideConfig SlideConfig
 
 	if utf8.RuneCount(getData.Value) == 0 {
-		return fmt.Errorf("The slide does not exist.")
+		return fmt.Errorf("the slide does not exist")
 	}
 
 	if err := json.Unmarshal(getData.Value, &slideConfig); err != nil {
@@ -456,7 +459,7 @@ func (s *SlideManager) DeletePage(slideId string, pageId string, storageOp stora
 	var slideData SlideData
 
 	if utf8.RuneCount(getData.Value) == 0 {
-		return fmt.Errorf("The slide does not exist.")
+		return fmt.Errorf("the slide does not exist")
 	}
 
 	if err := json.Unmarshal(getData.Value, &slideData); err != nil {

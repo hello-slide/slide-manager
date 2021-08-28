@@ -33,7 +33,7 @@ func getIndexSlideConfig(slideConfig SlideConfig, targetId string) (int, error) 
 		}
 	}
 	if !isExist {
-		return 0, fmt.Errorf("The specified slide ID does not exist.")
+		return 0, fmt.Errorf("the specified slide ID does not exist")
 	}
 	return targetIndex, nil
 }
@@ -57,7 +57,7 @@ func getIndexPage(slideData SlideData, targetId string) (int, error) {
 		}
 	}
 	if !isExist {
-		return 0, fmt.Errorf("The specified slide ID does not exist.")
+		return 0, fmt.Errorf("the specified slide ID does not exist")
 	}
 	return targetIndex, nil
 }
