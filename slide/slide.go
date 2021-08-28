@@ -10,7 +10,7 @@ import (
 	"github.com/dapr/go-sdk/client"
 	"github.com/hello-slide/slide-manager/state"
 	"github.com/hello-slide/slide-manager/storage"
-	"github.com/hello-slide/slide-manager/token"
+	"github.com/hello-slide/slide-manager/utils"
 )
 
 type SlideManager struct {
@@ -36,7 +36,7 @@ func NewSlideManager(ctx context.Context, daprClient *client.Client, userId stri
 // Return:
 // - id string: Slide id
 func (s *SlideManager) Create(title string) (string, error) {
-	slideId, err := token.CreateId(title)
+	slideId, err := utils.CreateId(title)
 	if err != nil {
 		return "", err
 	}
@@ -82,7 +82,7 @@ func (s *SlideManager) CreatePage(slideId string, pageType string) (*PageData, e
 		return nil, err
 	}
 
-	pageId, err := token.CreateId(slideId)
+	pageId, err := utils.CreateId(slideId)
 	if err != nil {
 		return nil, err
 	}

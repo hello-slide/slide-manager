@@ -7,7 +7,7 @@ import (
 
 	networkUtils "github.com/hello-slide/network-util"
 	"github.com/hello-slide/slide-manager/slide"
-	"github.com/hello-slide/slide-manager/token"
+	"github.com/hello-slide/slide-manager/utils"
 )
 
 func ListHandler(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +24,7 @@ func ListHandler(w http.ResponseWriter, r *http.Request) {
 		networkUtils.ErrorResponse(w, 1, err)
 		return
 	}
-	userId, err := token.VerifySessionToken(ctx, client, sessionToken, tokenManagerName)
+	userId, err := utils.VerifySessionToken(ctx, client, sessionToken, tokenManagerName)
 	if err != nil {
 		networkUtils.ErrorResponse(w, 2, err)
 		return

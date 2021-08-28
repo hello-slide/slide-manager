@@ -7,7 +7,7 @@ import (
 
 	networkUtils "github.com/hello-slide/network-util"
 	"github.com/hello-slide/slide-manager/slide"
-	"github.com/hello-slide/slide-manager/token"
+	"github.com/hello-slide/slide-manager/utils"
 )
 
 func SwapHandler(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +51,7 @@ func SwapHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, err := token.VerifySessionToken(ctx, client, sessionToken, tokenManagerName)
+	userId, err := utils.VerifySessionToken(ctx, client, sessionToken, tokenManagerName)
 	if err != nil {
 		networkUtils.ErrorResponse(w, 2, err)
 		return

@@ -7,7 +7,7 @@ import (
 	networkUtils "github.com/hello-slide/network-util"
 	"github.com/hello-slide/slide-manager/slide"
 	_storage "github.com/hello-slide/slide-manager/storage"
-	"github.com/hello-slide/slide-manager/token"
+	"github.com/hello-slide/slide-manager/utils"
 )
 
 func DeleteSlideHandler(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +30,7 @@ func DeleteSlideHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, err := token.VerifySessionToken(ctx, client, sessionToken, tokenManagerName)
+	userId, err := utils.VerifySessionToken(ctx, client, sessionToken, tokenManagerName)
 	if err != nil {
 		networkUtils.ErrorResponse(w, 2, err)
 		return

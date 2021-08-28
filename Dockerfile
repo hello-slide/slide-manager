@@ -7,9 +7,10 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY ./slide ./slide/
+COPY ./handler ./handler/
 COPY ./state ./state/
 COPY ./storage ./storage/
-COPY ./token ./token/
+COPY ./utils ./utils/
 COPY ./main.go ./
 
 ARG CGO_ENABLED=0
