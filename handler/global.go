@@ -12,6 +12,7 @@ import (
 var client dapr.Client
 var storageClient *storage.Client
 var tokenManagerName string = os.Getenv("TOKEN_MANAGER")
+var url string = os.Getenv("API_URL")
 
 // Initialize dapr client.
 func InitClient() error {

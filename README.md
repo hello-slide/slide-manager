@@ -6,6 +6,7 @@
 KEY= # Google IAM json
 SLIDE_INFO_STATE="slide-info-state"
 TOKEN_MANAGER="token-manager"
+storageClient="https://api.hello-slide.jp"
 ```
 
 ## LICENSE
