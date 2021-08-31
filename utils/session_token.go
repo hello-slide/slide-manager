@@ -46,7 +46,7 @@ func GetSessonToken(
 
 	redirectUrl := strings.Join([]string{apiUrl, "/account/update?redirect=", handlePath}, "")
 
-	http.Redirect(w, r, redirectUrl, http.StatusMovedPermanently)
+	http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
 
 	return "", nil
 }
