@@ -278,7 +278,7 @@ func (s *SlideManager) Rename(slideId string, newName string) error {
 	}
 
 	if utf8.RuneCount(_slideData.Value) == 0 {
-		return fmt.Errorf("the slide does not exist")
+		return nil
 	}
 
 	var slideData SlideData
