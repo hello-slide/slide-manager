@@ -77,6 +77,8 @@ func (s *SlideManager) Create(title string) (string, error) {
 // - slideId: Id of slide.
 // - pageType: page type.
 func (s *SlideManager) CreatePage(slideId string, pageType string) (*PageData, error) {
+	id := strings.Join([]string{s.userId, slideId}, "|")
+
 	slideDetails, err := s.GetSlideDetails(slideId)
 	if err != nil {
 		return nil, err
@@ -104,7 +106,7 @@ func (s *SlideManager) CreatePage(slideId string, pageType string) (*PageData, e
 	}
 
 	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
-	if err := slideInfo.Set(slideId, body); err != nil {
+	if err := slideInfo.Set(id, body); err != nil {
 		return nil, err
 	}
 
@@ -166,8 +168,10 @@ func (s *SlideManager) GetInfo() (*SlideConfig, error) {
 // Arguments:
 // - slideId: Id of slide.
 func (s *SlideManager) GetSlideDetails(slideId string) (*SlideData, error) {
+	id := strings.Join([]string{s.userId, slideId}, "|")
+
 	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
-	getSlideData, err := slideInfo.Get(slideId)
+	getSlideData, err := slideInfo.Get(id)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +207,7 @@ func (s *SlideManager) GetSlideDetails(slideId string) (*SlideData, error) {
 		return nil, err
 	}
 
-	if err := slideInfo.Set(slideId, body); err != nil {
+	if err := slideInfo.Set(id, body); err != nil {
 		return nil, err
 	}
 
@@ -272,7 +276,9 @@ func (s *SlideManager) Rename(slideId string, newName string) error {
 	}
 
 	// change slide details.
-	_slideData, err := slideInfo.Get(slideId)
+	id := strings.Join([]string{s.userId, slideId}, "|")
+
+	_slideData, err := slideInfo.Get(id)
 	if err != nil {
 		return err
 	}
@@ -293,7 +299,7 @@ func (s *SlideManager) Rename(slideId string, newName string) error {
 		return err
 	}
 
-	if err := slideInfo.Set(slideId, body); err != nil {
+	if err := slideInfo.Set(id, body); err != nil {
 		return err
 	}
 
@@ -307,6 +313,8 @@ func (s *SlideManager) Rename(slideId string, newName string) error {
 // - origin: origin index.
 // - target: target index.
 func (s *SlideManager) SwapPage(slideId string, origin int, target int) error {
+	id := strings.Join([]string{s.userId, slideId}, "|")
+
 	slideData, err := s.GetSlideDetails(slideId)
 	if err != nil {
 		return err
@@ -328,7 +336,7 @@ func (s *SlideManager) SwapPage(slideId string, origin int, target int) error {
 		return err
 	}
 	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
-	if err := slideInfo.Set(slideId, []byte(body)); err != nil {
+	if err := slideInfo.Set(id, []byte(body)); err != nil {
 		return err
 	}
 
@@ -381,7 +389,8 @@ func (s *SlideManager) Delete(slideId string, storageOp storage.StorageOp) error
 	}
 
 	// delete slide page info
-	if err := slideInfo.Delete(slideId); err != nil {
+	id := strings.Join([]string{s.userId, slideId}, "|")
+	if err := slideInfo.Delete(id); err != nil {
 		return err
 	}
 
@@ -422,7 +431,8 @@ func (s *SlideManager) DeleteAll(storageOp storage.StorageOp) error {
 		return err
 	}
 	for _, pageId := range slideConfig.Slides {
-		if err := slideInfo.Delete(pageId.Id); err != nil {
+		id := strings.Join([]string{s.userId, pageId.Id}, "|")
+		if err := slideInfo.Delete(id); err != nil {
 			return err
 		}
 	}
@@ -450,8 +460,9 @@ func (s *SlideManager) DeleteAll(storageOp storage.StorageOp) error {
 // - storageOp: storage op instance
 func (s *SlideManager) DeletePage(slideId string, pageId string, storageOp storage.StorageOp) error {
 	slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
+	id := strings.Join([]string{s.userId, slideId}, "|")
 
-	getData, err := slideInfo.Get(slideId)
+	getData, err := slideInfo.Get(id)
 	if err != nil {
 		return err
 	}
@@ -481,7 +492,7 @@ func (s *SlideManager) DeletePage(slideId string, pageId string, storageOp stora
 		return err
 	}
 
-	if err := slideInfo.Set(slideId, body); err != nil {
+	if err := slideInfo.Set(id, body); err != nil {
 		return err
 	}
 
@@ -532,6 +543,8 @@ func (s *SlideManager) changedDateUpdate(isInfo bool, isDetails bool, slideId st
 	}
 
 	if isDetails {
+		id := strings.Join([]string{s.userId, slideId}, "|")
+
 		slideDetails, err := s.GetSlideDetails(slideId)
 		if err != nil {
 			return err
@@ -544,7 +557,7 @@ func (s *SlideManager) changedDateUpdate(isInfo bool, isDetails bool, slideId st
 		}
 
 		slideInfo := state.NewState(s.client, &s.ctx, slideInfoState)
-		if err := slideInfo.Set(slideId, body); err != nil {
+		if err := slideInfo.Set(id, body); err != nil {
 			return err
 		}
 	}
